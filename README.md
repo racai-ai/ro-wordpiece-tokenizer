@@ -1,4 +1,4 @@
-# A Romanian WorPiece Tokenizer for use with HuggingFace models
+# A Romanian WordPiece Tokenizer for use with HuggingFace models
 This is a 'proper' Romanian WordPiece tokenizer, to be used with the HuggingFace `tokenizers` library.
 
 It will do the following:
