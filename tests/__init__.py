@@ -1,1 +1,2 @@
 from normalizer import RomanianNormalizer
+from pretokenizer import RomanianPreTokenizer
