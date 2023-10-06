@@ -64,11 +64,13 @@ class RoTokenizer(object):
     ]
 
     def __init__(self):
+        self._maxwordlen = 25
         self._lexicon = self._read_romanian_wordforms()
         self._maxmwelen = 2
         self._mwefirstword = self._read_romanian_mwes(lexicon=self._lexicon)
         self._maxabbrlen = 2
         self._abbrfirstword = self._read_romanian_abbrs(lexicon=self._lexicon)
+        print(f'Maximum length of a word is [{self._maxwordlen}]', file=sys.stderr, flush=True)
 
     def _read_romanian_wordforms(self) -> set[str]:
         wordforms_file = Path(__file__).parent / 'data' / 'wordforms.txt'
@@ -78,7 +80,12 @@ class RoTokenizer(object):
 
         with open(wordforms_file, mode='r', encoding='utf-8') as f:
             for line in f:
-                wordforms.add(line.strip())
+                word = line.strip()
+                wordforms.add(word)
+
+                if len(word) > self._maxwordlen:
+                    self._maxwordlen = len(word)
+                # end if
             # end for
         # end with
 
@@ -103,6 +110,10 @@ class RoTokenizer(object):
 
                 mwefirstword.add(parts[0])
                 lexicon.add(mwe)
+
+                if len(mwe) > self._maxwordlen:
+                    self._maxwordlen = len(mwe)
+                # end if
             # end for
         # end with
 
@@ -127,6 +138,10 @@ class RoTokenizer(object):
 
                 abbrfirstword.add(parts[0])
                 lexicon.add(abbr)
+
+                if len(abbr) > self._maxwordlen:
+                    self._maxwordlen = len(abbr)
+                # end if
             # end for
         # end with
 
@@ -626,8 +641,7 @@ class RoTokenizer(object):
         final_tokens = []
 
         for tok, lab in glued_tokens:
-            if not RoTokenizer.is_whitespace_label(label=lab) and \
-                    not RoTokenizer.is_junk_label(label=lab):
+            if not RoTokenizer.is_whitespace_label(label=lab):
                 final_tokens.append(tok)
             # end if
         # end for
