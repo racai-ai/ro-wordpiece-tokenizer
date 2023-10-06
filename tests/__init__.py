@@ -1,2 +1,2 @@
-from normalizer import RomanianNormalizer
-from pretokenizer import RomanianPreTokenizer
+from ro_normalizer import RomanianNormalizer
+from ro_pretokenizer import RomanianPreTokenizer

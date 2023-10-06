@@ -16,18 +16,17 @@ a.i.
 a.m.
 a.p.
 A.S.E.
+ASE
 A.T.F.
 ADAS
 ADN
 AGA
 al.e.
 am
-ASE
-at
-ata
 B.D.F.
 B.I.
 B.N.R.
+BNR
 BCR
 BERD
 BIR
@@ -50,7 +49,6 @@ C.N.E.A.A.
 c.v.
 C.V.
 CA
-CA-uri
 CDR
 CEC
 CET
@@ -95,7 +93,7 @@ FPP
 FPS
 FSN
 g.cal.
-g.cm
+g.cm.
 GB
 GPL
 h.a.
@@ -114,7 +112,7 @@ IGP
 J.O.
 jur.
 K.O.
-kgf.
+kgf
 kWh
 l.c.
 lat.med.
@@ -136,6 +134,7 @@ MI
 morm.com.
 mp
 MTV
+nr.
 n.a.
 N.a.
 N.B.
@@ -159,6 +158,7 @@ of.p.
 ONU
 op.cit.
 OPI
+pm
 p.a.
 P.C.R.
 p.t.
@@ -199,6 +199,7 @@ SC
 SE
 serg.maj.
 sl.
+SC
 SPP
 SRI
 SRL
@@ -222,3 +223,4 @@ v.v.
 var.lect.
 w.c.
 W.C.
+WC
