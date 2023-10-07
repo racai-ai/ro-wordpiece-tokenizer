@@ -2,7 +2,7 @@ from tokenizers.pre_tokenizers import PreTokenizer
 from tokenizers import Tokenizer
 from tokenizers.models import WordPiece
 from tokenizers.normalizers import Normalizer
-from . import RomanianNormalizer, RomanianPreTokenizer
+from . import RomanianNormalizer, RomanianPreTokenizer, TrainingPreTokenizer
 
 
 def test_pretokenization():
@@ -112,3 +112,41 @@ def test_pretokenization_str():
     assert tokens[4][0] == 'în principiu'
     assert tokens[6][0] == 'nr.'
     assert tokens[12][0] == 'suntem'
+
+
+def test_training_pretokenization():
+    input_text = "Recunoașterea_tk_artistică_tk_și_tk_comercială_tk_vine_tk_odată cu_tk_lansarea_tk_" + \
+        "celui_tk_de-_tk_al_tk_doilea_tk_album_tk_,_tk_“_tk_Wild_tk_Young_tk_Hearts_tk_”_tk_;"
+    input_vocabulary = {
+        '[UNK]': 0,
+        'Recunoașterea': 1,
+        'artistică': 2,
+        'și': 3,
+        'comercială': 4,
+        'vine': 5,
+        'odată cu': 6,
+        'lansarea': 7,
+        'celui': 8,
+        'de-': 9,
+        'al': 10,
+        'doilea': 11,
+        'album': 12,
+        ',': 13,
+        '“': 14,
+        'Wild': 15,
+        'Young': 16,
+        'Hearts': 17,
+        '”': 18,
+        ';': 19,
+    }
+    wp_model = WordPiece(vocab=input_vocabulary,
+                         unk_token='[UNK]', max_input_chars_per_word=25)
+    tokenizer = Tokenizer(model=wp_model)
+    tokenizer.pre_tokenizer = PreTokenizer.custom(TrainingPreTokenizer())
+    result = tokenizer.encode(sequence=input_text)
+    assert result.tokens == [
+        'Recunoașterea', 'artistică', 'și', 'comercială',
+        'vine', 'odată cu', 'lansarea', 'celui', 'de-',
+        'al', 'doilea', 'album', ',', '“', 'Wild',
+        'Young', 'Hearts', '”', ';'
+    ]

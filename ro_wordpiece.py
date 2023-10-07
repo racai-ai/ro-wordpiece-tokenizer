@@ -7,9 +7,10 @@ from typing import Dict, List, Optional, Union
 from tokenizers import AddedToken, Tokenizer, decoders, trainers
 from tokenizers.models import WordPiece
 from tokenizers.normalizers import Normalizer
-from tokenizers.pre_tokenizers import PreTokenizer, WhitespaceSplit
+from tokenizers.pre_tokenizers import PreTokenizer
 from ro_normalizer import RomanianNormalizer
-from ro_pretokenizer import RomanianPreTokenizer
+from ro_pretokenizer import RomanianPreTokenizer, TrainingPreTokenizer
+from ro_decoder import RomanianDecoder
 from tokenizers.implementations import BaseTokenizer
 
 
@@ -24,17 +25,24 @@ class RoBertWordPieceTokenizer(BaseTokenizer):
         cls_token: Union[str, AddedToken] = "[CLS]",
         pad_token: Union[str, AddedToken] = "[PAD]",
         mask_token: Union[str, AddedToken] = "[MASK]",
-        wordpieces_prefix: str = "##"
+        wordpieces_prefix: str = "##",
+        train_mode: bool = False
     ):
-        ro_pretokenizer = RomanianPreTokenizer()
+        if train_mode:
+            ro_pretokenizer = TrainingPreTokenizer()
+            max_token_len = RomanianPreTokenizer().maxwordlen
+        else:
+            ro_pretokenizer = RomanianPreTokenizer()
+            max_token_len = ro_pretokenizer.maxwordlen
+        # end if
 
         if vocab is not None:
             tokenizer = Tokenizer(WordPiece(vocab,
                                             unk_token=str(unk_token),
-                                            max_input_chars_per_word=ro_pretokenizer.maxwordlen))
+                                            max_input_chars_per_word=max_token_len))
         else:
             tokenizer = Tokenizer(WordPiece(unk_token=str(unk_token),
-                                            max_input_chars_per_word=ro_pretokenizer.maxwordlen))
+                                            max_input_chars_per_word=max_token_len))
 
         # Let the tokenizer know about special tokens if they are part of the vocab
         if tokenizer.token_to_id(str(unk_token)) is not None:
@@ -57,7 +65,10 @@ class RoBertWordPieceTokenizer(BaseTokenizer):
             tokenizer.add_special_tokens([str(mask_token)])
         # end if
 
-        tokenizer.normalizer = Normalizer.custom(RomanianNormalizer())
+        if not train_mode:
+            tokenizer.normalizer = Normalizer.custom(RomanianNormalizer())
+        # end if
+
         tokenizer.pre_tokenizer = PreTokenizer.custom(ro_pretokenizer)
 
         if vocab is not None:
@@ -74,8 +85,16 @@ class RoBertWordPieceTokenizer(BaseTokenizer):
             # end if
         # end if
 
-        tokenizer.decoder = decoders.WordPiece(prefix=wordpieces_prefix)
-
+        tokenizer.decoder = decoders.Sequence([
+            decoders.WordPiece(prefix=wordpieces_prefix, cleanup=True),
+            # TODO: Decoder.custom() is not yet implemented in tokenizers.
+            # When updating this module, try and uncomment the next decoder
+            # and update the test_pretrained.py/test_one() and test_two() methods
+            # to remove spaces in front of clitics (e.g. '-o')
+            #
+            # decoders.Decoder.custom(RomanianDecoder())
+        ])
+        
         parameters = {
             "model": "RoBertWordPiece",
             "unk_token": unk_token,
@@ -138,13 +157,17 @@ if __name__ == '__main__':
     corola_folder = sys.argv[1]
     corola_files = []
 
+    # Training files have to be:
+    # 1. Already normalized with the RomanianNormalizer
+    # 2. Already tokenized with the RomanianPreTokenizer
+    # (tokens are obtained by pre-tokenizing with the TrainingPreTokenizer)
     for txt in os.listdir(path=corola_folder):
         if txt.endswith('.txt'):
             corola_files.append(os.path.join(corola_folder, txt))
         # end if
     # end for
 
-    tokenizer = RoBertWordPieceTokenizer()
+    tokenizer = RoBertWordPieceTokenizer(train_mode=True)
     # After inspecting the CoRoLa vocabulary, these are the best values.
     tokenizer.train(files=corola_files, vocab_size=500_000, min_frequency=5)
     tokenizer.save_model(directory='model')
