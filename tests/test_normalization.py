@@ -1,4 +1,4 @@
-from . import RomanianNormalizer
+from . import ro_normalizer
 from tokenizers import Tokenizer
 from tokenizers.models import WordPiece
 from tokenizers.normalizers import Normalizer
@@ -20,7 +20,7 @@ def test_normalization_1():
     }
     wp_model = WordPiece(vocab=input_vocabulary, unk_token='[UNK]', max_input_chars_per_word=15)
     tokenizer = Tokenizer(model=wp_model)
-    tokenizer.normalizer = Normalizer.custom(RomanianNormalizer())
+    tokenizer.normalizer = Normalizer.custom(ro_normalizer)
     tokenizer.pre_tokenizer = WhitespaceSplit()
     result = tokenizer.encode(sequence=input_text)
     
@@ -28,7 +28,7 @@ def test_normalization_1():
 
 def test_normalization_2():
     input_text = '\t Sîntem aici,   pe        neîngrădita mirişte din Romînia!\n\n'
-    normalizer = RomanianNormalizer()
+    normalizer = ro_normalizer
     norm_text = normalizer.normalize_str(sequence=input_text)
     
     assert norm_text == 'Suntem aici, pe neîngrădita miriște din România!'

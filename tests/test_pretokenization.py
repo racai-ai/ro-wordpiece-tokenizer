@@ -2,7 +2,7 @@ from tokenizers.pre_tokenizers import PreTokenizer
 from tokenizers import Tokenizer
 from tokenizers.models import WordPiece
 from tokenizers.normalizers import Normalizer
-from . import RomanianNormalizer, RomanianPreTokenizer, TrainingPreTokenizer
+from . import ro_normalizer, ro_pretokenizer, ro_train_pretokenizer
 
 
 def test_pretokenization():
@@ -42,8 +42,8 @@ def test_pretokenization():
     wp_model = WordPiece(vocab=input_vocabulary,
                          unk_token='[UNK]', max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
-    tokenizer.normalizer = Normalizer.custom(RomanianNormalizer())
-    tokenizer.pre_tokenizer = PreTokenizer.custom(RomanianPreTokenizer())
+    tokenizer.normalizer = Normalizer.custom(ro_normalizer)
+    tokenizer.pre_tokenizer = PreTokenizer.custom(ro_pretokenizer)
     result = tokenizer.encode(sequence=input_text)
     assert result.tokens == [
         'Ți-', 'am', 'spus', 'că',
@@ -86,8 +86,8 @@ def test_pretokenization_bug_1():
     wp_model = WordPiece(vocab=input_vocabulary,
                          unk_token='[UNK]', max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
-    tokenizer.normalizer = Normalizer.custom(RomanianNormalizer())
-    tokenizer.pre_tokenizer = PreTokenizer.custom(RomanianPreTokenizer())
+    tokenizer.normalizer = Normalizer.custom(ro_normalizer)
+    tokenizer.pre_tokenizer = PreTokenizer.custom(ro_pretokenizer)
     result = tokenizer.encode(sequence=input_text)
     assert result.tokens == [
         'Dash', 'Berlin', ',',
@@ -103,10 +103,8 @@ def test_pretokenization_bug_1():
 
 def test_pretokenization_str():
     input_text = '\tCa să vedem  dacă  merge   în principiu cu nr. 1, şi „dacă sîntem gîndindu-ne corect!!”  \t\t'
-    ro_norm = RomanianNormalizer()
-    norm_text = ro_norm.normalize_str(sequence=input_text)
-    ro_prtk = RomanianPreTokenizer()
-    tokens = ro_prtk.pre_tokenize_str(sequence=norm_text)
+    norm_text = ro_normalizer.normalize_str(sequence=input_text)
+    tokens = ro_pretokenizer.pre_tokenize_str(sequence=norm_text)
     assert len(tokens) == 19
     assert tokens[0][0] == 'Ca să'
     assert tokens[4][0] == 'în principiu'
@@ -142,7 +140,7 @@ def test_training_pretokenization():
     wp_model = WordPiece(vocab=input_vocabulary,
                          unk_token='[UNK]', max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
-    tokenizer.pre_tokenizer = PreTokenizer.custom(TrainingPreTokenizer())
+    tokenizer.pre_tokenizer = PreTokenizer.custom(ro_train_pretokenizer)
     result = tokenizer.encode(sequence=input_text)
     assert result.tokens == [
         'Recunoașterea', 'artistică', 'și', 'comercială',
