@@ -6,6 +6,11 @@
 ș.cl.
 ș.m.a.
 șt.nat.
+alin.
+aln.
+art.
+par.
+p.
 a.c.
 a.d.
 a.D.
@@ -59,6 +64,7 @@ CHF
 CISL
 CM
 CP
+cap.
 d.civ.
 d.e.
 d.pen.
@@ -98,6 +104,7 @@ GB
 GPL
 h.a.
 H.G.
+HG
 h.l.
 h.m.
 h.n.
@@ -157,6 +164,7 @@ O.Z.N.
 of.p.
 ONU
 op.cit.
+ordin.
 OPI
 pm
 p.a.

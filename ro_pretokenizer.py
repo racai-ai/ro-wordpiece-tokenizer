@@ -35,7 +35,7 @@ class RomanianPreTokenizer(object):
                         (crt_token[i] == '_' and norm_string[roff] == ' '):
                     roff += 1
                 else:
-                    print(f'Current [{crt_token}] token out of sync, in normalized string [{norm_string}]',
+                    print(f'Current [{crt_token}] token out of sync (i = {i}, roff = {roff}), in normalized string [{norm_string}]',
                           file=sys.stderr, flush=True)
                     out_of_sync = True
                     break
@@ -93,7 +93,7 @@ class RomanianPreTokenizer(object):
                         (crt_token[i] == '_' and sequence[roff] == ' '):
                     roff += 1
                 else:
-                    print(f'Current [{crt_token}] token out of sync, in normalized string [{sequence}]',
+                    print(f'Current [{crt_token}] token out of sync (i = {i}, roff = {roff}), in normalized string [{sequence}]',
                           file=sys.stderr, flush=True)
                     out_of_sync = True
                     break
@@ -126,3 +126,20 @@ class RomanianPreTokenizer(object):
         # end while
 
         return result
+
+
+class TrainingPreTokenizer(object):
+    """Only used when training on pre-tokenized data.
+    Just split at '_tk_' boundary and remove it."""
+
+    def _train_split(self, index: int, normstr: NormalizedString) -> list[NormalizedString]:
+        delimiter = '_tk_'
+        
+        if delimiter in normstr.normalized:
+            return normstr.split(pattern='_tk_', behavior='removed')
+        else:
+            return [normstr]
+        # end if
+
+    def pre_tokenize(self, pretok: PreTokenizedString):
+        pretok.split(func=self._train_split)

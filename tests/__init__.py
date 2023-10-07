@@ -1,2 +1,3 @@
 from ro_normalizer import RomanianNormalizer
-from ro_pretokenizer import RomanianPreTokenizer
+from ro_pretokenizer import RomanianPreTokenizer, TrainingPreTokenizer
+from ro_wordpiece import RoBertWordPieceTokenizer
