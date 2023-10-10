@@ -32,3 +32,16 @@ assert result_decoded == 'Suntem OK și ar trebui să -mi meargă, în principiu
 ```
 
 Full Romanian decoding isn't currently working (please notice the space between 'să' and '-mi') because `decoders.Decoder.custom()` is not implmemented yet in the `tokenizers` library.
+
+# Transformers usage example
+In order to use the tokenizer with the `__call__` method (as preferred in the Transformers documentation), do the following:
+```python
+import os
+from ro_wordpiece import RoBertPreTrainedTokenizer
+
+corola_vocab_file = os.path.join('model', 'vocab.txt')
+tokenizer = RoBertPreTrainedTokenizer.from_pretrained(
+    corola_vocab_file, model_max_length=256)
+input_text = "\t\tSîntem OK şi ar trebui să-mi meargă, în principiu.\n\n"
+result_encoded = tokenizer(text=input_text, padding='max_length')
+```
