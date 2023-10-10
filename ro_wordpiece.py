@@ -12,6 +12,7 @@ from ro_normalizer import RomanianNormalizer
 from ro_pretokenizer import RomanianPreTokenizer, TrainingPreTokenizer
 from ro_decoder import RomanianDecoder
 from tokenizers.implementations import BaseTokenizer
+from transformers import PreTrainedTokenizer
 
 
 class RoBertWordPieceTokenizer(BaseTokenizer):
@@ -43,6 +44,7 @@ class RoBertWordPieceTokenizer(BaseTokenizer):
         else:
             tokenizer = Tokenizer(WordPiece(unk_token=str(unk_token),
                                             max_input_chars_per_word=max_token_len))
+        # end if
 
         # Let the tokenizer know about special tokens if they are part of the vocab
         if tokenizer.token_to_id(str(unk_token)) is not None:
@@ -148,6 +150,56 @@ class RoBertWordPieceTokenizer(BaseTokenizer):
         self._tokenizer.train(files, trainer=trainer)
 
 
+class RoBertPreTrainedTokenizer(PreTrainedTokenizer):
+    """Use this class with the `transformers` library.
+
+    The following should be enforced:
+    - the `RoBertWordPieceTokenizer`, which is the underlying tokenizer,
+    is case sensitive, so the use of `do_lower_case` is not tested 
+    - `save_pretrained` does not work with custom/Python tokenizers
+    - this tokenizer cannot be pushed to the HuggingFace hub."""
+
+    vocab_files_names = {
+        'RoBertWordPieceTokenizer': os.path.join(os.path.dirname(__file__), 'model', 'vocab.txt')
+    }
+
+    def __init__(self, *init_inputs, **kwargs):
+        if 'name_or_path' in kwargs:
+            # When called from RoBertPreTrainedTokenizer.from_pretrained(vocab.txt)
+            self._ro_wordpiece_tokenizer = \
+                RoBertWordPieceTokenizer.from_file(
+                    vocab=kwargs['name_or_path'])
+        else:
+            self._ro_wordpiece_tokenizer = RoBertWordPieceTokenizer.from_file(
+                vocab=RoBertPreTrainedTokenizer.vocab_files_names['RoBertWordPieceTokenizer'])
+        
+        super().__init__(
+            unk_token=self._ro_wordpiece_tokenizer._parameters['unk_token'],
+            sep_token=self._ro_wordpiece_tokenizer._parameters['sep_token'],
+            pad_token=self._ro_wordpiece_tokenizer._parameters['pad_token'],
+            cls_token=self._ro_wordpiece_tokenizer._parameters['cls_token'],
+            mask_token=self._ro_wordpiece_tokenizer._parameters['mask_token'],
+            **kwargs)
+
+    @property
+    def vocab_size(self) -> int:
+        """
+        `int`: Size of the base vocabulary (without externally added new tokens).
+        """
+        return self._ro_wordpiece_tokenizer.get_vocab_size(with_added_tokens=True)
+    
+    def get_vocab(self) -> Dict[str, int]:
+        return self._ro_wordpiece_tokenizer.get_vocab(with_added_tokens=True)
+
+    def _tokenize(self, text, **kwargs):
+        return self._ro_wordpiece_tokenizer.encode(sequence=text,
+                                                   is_pretokenized=False,
+                                                   add_special_tokens=False).tokens
+
+    def _convert_token_to_id(self, token):
+        return self._ro_wordpiece_tokenizer.token_to_id(token=token)
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Usage: python3 ro_wordpiece.py <folder with .txt files>', file=sys.stderr, flush=True)
@@ -171,3 +223,26 @@ if __name__ == '__main__':
     # After inspecting the CoRoLa vocabulary, these are the best values.
     tokenizer.train(files=corola_files, vocab_size=500_000, min_frequency=5)
     tokenizer.save_model(directory='model')
+
+    # Bug: save_model() saves some duplicate tokens...
+    vocab_file_in = os.path.join('model', 'vocab.txt')
+    vocab_file_out = os.path.join('model', 'vocab2.txt')
+    vocab_terms = set()
+
+    with open(vocab_file_out, mode='w', encoding='utf-8') as f:
+        with open(vocab_file_in, mode='r', encoding='utf-8') as ff:
+            for line in ff:
+                term = line.strip()
+
+                if term not in vocab_terms:
+                    print(term, file=f, end='\n')
+                    vocab_terms.add(term)
+                else:
+                    print(f'vocab.txt term [{term}] is duplicated', file=sys.stderr, flush=True)
+                # end if
+            # end for
+        # end with
+    # end with
+
+    os.remove(path=vocab_file_in)
+    os.rename(src=vocab_file_out, dst=vocab_file_in)

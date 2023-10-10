@@ -132,11 +132,14 @@ class TrainingPreTokenizer(object):
     """Only used when training on pre-tokenized data.
     Just split at '_tk_' boundary and remove it."""
 
+    delimiter = '_tk_'
+
     def _train_split(self, index: int, normstr: NormalizedString) -> list[NormalizedString]:
-        delimiter = '_tk_'
+        normstr.strip()
         
-        if delimiter in normstr.normalized:
-            return normstr.split(pattern='_tk_', behavior='removed')
+        if TrainingPreTokenizer.delimiter in normstr.normalized:
+            return normstr.split(pattern=TrainingPreTokenizer.delimiter,
+                                 behavior='removed')
         else:
             return [normstr]
         # end if

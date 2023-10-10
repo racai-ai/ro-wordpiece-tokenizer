@@ -6,9 +6,40 @@ import sys
 from pathlib import Path
 from time import sleep
 from tqdm import tqdm
+import unicodedata
 from multiprocessing import Process
 from ro_normalizer import RomanianNormalizer
 from ro_pretokenizer import RomanianPreTokenizer
+
+
+_allowed_unicode_cats = set([
+    'Lu', 'Ll', 'Lt', 'Lo', 'Nd',
+    'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe',
+    'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk',
+    'So', 'Zs', 'Zl'
+])
+
+
+def filter_weird_tokens(tokens: list[str]) -> list[str]:
+    result = []
+    
+    for token in tokens:
+        crt_token = []
+
+        for chr in token:
+            ctg = unicodedata.category(chr)
+
+            if ctg in _allowed_unicode_cats:
+                crt_token.append(chr)
+            # end if
+        # end for
+
+        if crt_token:
+            result.append(''.join(crt_token))
+        # end if
+    # end for
+
+    return result
 
 
 def process_file(input_file: str, output_folder: str) -> None:
@@ -26,7 +57,8 @@ def process_file(input_file: str, output_folder: str) -> None:
                 sentence = ro_normal.normalize_str(sentence)
                 tokens = ro_pretok.pre_tokenize_str(sentence)
                 only_tokens = [x[0] for x in tokens]
-                print('_tk_'.join(only_tokens), file=ff)
+                filtered_tokens = filter_weird_tokens(tokens=only_tokens)
+                print('_tk_'.join(filtered_tokens), file=ff)
             # end for
         # end with
     # end with
@@ -38,6 +70,9 @@ if __name__ == '__main__':
     if len(sys.argv) > 5 or len(sys.argv) < 3:
         print('Usage: python3 ro_traindata.py [-p <count>] <source folder with .txt sentence files> <output folder>',
               file=sys.stderr, flush=True)
+        exit(1)
+    # end if
+
     if sys.argv[1] == '-p':
         process_count = int(sys.argv[2])
         sys.argv.pop(2)

@@ -4,13 +4,14 @@ from tokenizers.models import WordPiece
 from tokenizers.normalizers import Normalizer
 from . import ro_normalizer, ro_pretokenizer, ro_train_pretokenizer
 
+_unk_token_str = '[UNK]'
 
 def test_pretokenization():
     input_text = '\tŢi-am spus    că merg   și abrevierile, ' + \
         'cum ar fi S.U.A. și nr. 1, dar în  acelaşi   timp și expresiile! \n\n' + \
         'Sînt curios dacă reântregirea textului se poate pîrî.'
     input_vocabulary = {
-        '[UNK]': 0,
+        _unk_token_str: 0,
         'Ți-': 1,
         'am': 2,
         'spus': 3,
@@ -40,7 +41,7 @@ def test_pretokenization():
         '1': 27
     }
     wp_model = WordPiece(vocab=input_vocabulary,
-                         unk_token='[UNK]', max_input_chars_per_word=25)
+                         unk_token=_unk_token_str, max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
     tokenizer.normalizer = Normalizer.custom(ro_normalizer)
     tokenizer.pre_tokenizer = PreTokenizer.custom(ro_pretokenizer)
@@ -60,7 +61,7 @@ def test_pretokenization_bug_1():
     input_text = "Dash Berlin, Ben Nicky, Steve Lee, " + \
         "Phil Reynold, Mr Ralz,Omnia , Andrew Rayel etc ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲ Chris Coles (UK)"
     input_vocabulary = {
-        '[UNK]': 0,
+        _unk_token_str: 0,
         'Dash': 1,
         'Berlin': 2,
         ',': 3,
@@ -84,7 +85,7 @@ def test_pretokenization_bug_1():
         ')': 21
     }
     wp_model = WordPiece(vocab=input_vocabulary,
-                         unk_token='[UNK]', max_input_chars_per_word=25)
+                         unk_token=_unk_token_str, max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
     tokenizer.normalizer = Normalizer.custom(ro_normalizer)
     tokenizer.pre_tokenizer = PreTokenizer.custom(ro_pretokenizer)
@@ -113,10 +114,10 @@ def test_pretokenization_str():
 
 
 def test_training_pretokenization():
-    input_text = "Recunoașterea_tk_artistică_tk_și_tk_comercială_tk_vine_tk_odată cu_tk_lansarea_tk_" + \
-        "celui_tk_de-_tk_al_tk_doilea_tk_album_tk_,_tk_“_tk_Wild_tk_Young_tk_Hearts_tk_”_tk_;"
+    input_text = "  Recunoașterea_tk_artistică_tk_și_tk_comercială_tk_vine_tk_odată cu_tk_lansarea_tk_" + \
+        "celui_tk_de-_tk_al_tk_doilea_tk_album_tk_,_tk_“_tk_Wild_tk_Young_tk_Hearts_tk_”_tk_;\r\n"
     input_vocabulary = {
-        '[UNK]': 0,
+        _unk_token_str: 0,
         'Recunoașterea': 1,
         'artistică': 2,
         'și': 3,
@@ -138,7 +139,7 @@ def test_training_pretokenization():
         ';': 19,
     }
     wp_model = WordPiece(vocab=input_vocabulary,
-                         unk_token='[UNK]', max_input_chars_per_word=25)
+                         unk_token=_unk_token_str, max_input_chars_per_word=25)
     tokenizer = Tokenizer(model=wp_model)
     tokenizer.pre_tokenizer = PreTokenizer.custom(ro_train_pretokenizer)
     result = tokenizer.encode(sequence=input_text)
