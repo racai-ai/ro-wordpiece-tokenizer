@@ -198,6 +198,9 @@ class RoBertPreTrainedTokenizer(PreTrainedTokenizer):
 
     def _convert_token_to_id(self, token):
         return self._ro_wordpiece_tokenizer.token_to_id(token=token)
+    
+    def _convert_id_to_token(self, index: int) -> str:
+        return self._ro_wordpiece_tokenizer.id_to_token(id=index)
 
 
 if __name__ == '__main__':
