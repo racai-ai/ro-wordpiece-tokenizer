@@ -35,6 +35,7 @@ Full Romanian decoding isn't currently working (please notice the space between 
 
 # Transformers usage example
 In order to use the tokenizer with the `__call__` method (as preferred in the Transformers documentation), do the following:
+
 ```python
 import os
 from ro_wordpiece import RoBertPreTrainedTokenizer
@@ -42,6 +43,19 @@ from ro_wordpiece import RoBertPreTrainedTokenizer
 corola_vocab_file = os.path.join('model', 'vocab.txt')
 tokenizer = RoBertPreTrainedTokenizer.from_pretrained(
     corola_vocab_file, model_max_length=256)
+input_text = "\t\tSîntem OK şi ar trebui să-mi meargă, în principiu.\n\n"
+result_encoded = tokenizer(text=input_text, padding='max_length')
+```
+
+# PyPI package example
+The tokenizer is now available on PyPI, and can be installed with the command `pip install rwpt`.
+
+The example above can then be rewritten as:
+
+```python
+from rwpt import load_ro_pretrained_tokenizer
+
+tokenizer = load_ro_pretrained_tokenizer(max_sequence_len=256)
 input_text = "\t\tSîntem OK şi ar trebui să-mi meargă, în principiu.\n\n"
 result_encoded = tokenizer(text=input_text, padding='max_length')
 ```
